@@ -1,0 +1,17 @@
+{
+  "name": "Hydra",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "faye": "^1.2.4",
+    "noogger": "^0.1.8",
+    "serialport": "^9.0.0",
+    "sf": "^0.1.9"
+  }
+}
