@@ -24,7 +24,7 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-      Serial.print("RELAY_STATUS");
+      Serial.print("CONTROLLER READY");
       Serial.println();
       delay(500);
 }
@@ -38,7 +38,7 @@ void changeLightState(int T[], char state){
           digitalWrite(T[GREEN],1);
         break;
         case 'R': 
-          digitalWrite(T[RED],0);
+          digitalWrite(T[GREEN],0);
           digitalWrite(T[ORANGE],0);        
           digitalWrite(T[RED],1);
         break;
@@ -52,7 +52,10 @@ void changeLightState(int T[], char state){
 void serialEvent(){
     if(Serial.available()) {
                 // read the incoming byte:
-            String str = Serial.readString();
+            String raw = Serial.readString();
+            for ( int j = 0; j < 4 ; j++ ) {
+              
+            String str = getValue(raw, ':', j);
             Serial.println(str);
             String T= str.substring(0, 2);
             int delimiter= str.indexOf('#');
@@ -66,7 +69,22 @@ void serialEvent(){
                 case 4: changeLightState(T4,S); break;
              }
             // debug
-                Serial.println(T);
-                Serial.println(S);
+            }
         }
+}
+
+String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }

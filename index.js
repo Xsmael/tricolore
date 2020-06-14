@@ -10,10 +10,7 @@ var faye= require('faye');
 var connector = new faye.Client('http://localhost:8008/faye');
 
 
-function relayCommand(relay, status) {
-    log.notice("R"+relay+"#"+status);
-    return "R"+relay+"#"+status;
-}
+
 
 // Running the connector
 var http = require('http');
@@ -23,9 +20,15 @@ var PORT=  8008;
 var server = http.createServer(),
 bayeux = new faye.NodeAdapter({mount: '/'});
 
-bayeux.on('subscribe', function(clientId, channel) { log.notice(clientId+" subscribed on channel "+channel); });
-bayeux.on('unsubscribe', function(clientId, channel) { log.warning(clientId+" unsubscribed on channel "+channel); });
-bayeux.on('publish', function(clientId, channel,data) { log.debug(clientId+" publish on channel "+channel); });
+bayeux.on('subscribe', function(clientId, channel) { 
+  // log.notice(clientId+" subscribed on channel "+channel); 
+});
+bayeux.on('unsubscribe', function(clientId, channel) { 
+  // log.warning(clientId+" unsubscribed on channel "+channel); 
+});
+bayeux.on('publish', function(clientId, channel,data) { 
+  // log.debug(clientId+" publish on channel "+channel); 
+});
 bayeux.attach(server);
 server.listen(PORT);
 log.info("Connector running on Port "+PORT);
@@ -48,11 +51,11 @@ function startTrafficLights() {
   
   setInterval(() => {
 
-    currentState.forEach(state => {
+    currentState.forEach((state, idx) => {
       if(state.includes('G') )
-      state=state.replace('G','O');
-      connector.publish('/TL_TOGGLE',[state]);
+      currentState[idx]=state.replace('G','O');
     });
+    connector.publish('/TL_TOGGLE',currentState);
     setTimeout(() => {
       if(toggle)
         connector.publish('/TL_TOGGLE',["F1#R","F3#R","F2#G","F4#G"]);
@@ -70,16 +73,12 @@ startTrafficLights();
 
 connector.subscribe('/TL_TOGGLE', function (state) {
     currentState=state;
-    log.debug(currentState)
-    
-    state.forEach(cmd => {
-      port.write(cmd, function(err) {
-          if (err) {
-            return log.error('command:'+cmd+' Error on write: ', err.message);
-          }
-          log.info(cmd+' written');
-        });
-    });
+    log.warning(state.join(':'));
+    port.write(state.join(':'), function(err) {
+        if (err) {
+          return log.error('command:'+cmd+' Error on write: ', err.message);
+        }
+      });
 });
 
 const SERIAL_PORT= "COM3";
@@ -96,5 +95,5 @@ const parser = port.pipe( new Readline({ delimiter: '\r\n' }));
 
 
 parser.on('data',  function (raw) {
-    log.debug('data received: '+raw);
+    // log.debug('data received: '+raw);
 });
